@@ -201,3 +201,24 @@ class Delaunay2D:
                 ]
             )
         )
+
+
+import random
+
+# generate a random set of points
+points = [(random.random(), random.random()) for _ in range(100)]
+# compute the Delaunay triangulation
+d = Delaunay2D(points)
+d.triangulate()
+
+import matplotlib.pyplot as plt
+
+# plot the triangulation
+
+for triangle in d.triangles:
+    plt.plot(
+        [triangle[0][0], triangle[1][0], triangle[2][0], triangle[0][0]],
+        [triangle[0][1], triangle[1][1], triangle[2][1], triangle[0][1]],
+        "k-",
+    )
+plt.show()
