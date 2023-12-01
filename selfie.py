@@ -1,11 +1,23 @@
 from picamera2 import Picamera2, Preview
 import time
+import sys
+import os
 
-picam2 = Picamera2()
-camera_config = picam2.create_preview_configuration()
-picam2.configure(camera_config)
-picam2.start_preview(Preview.QTGL)
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python3 selfie.py <filename>")
+        sys.exit(1)
 
-picam2.start()
-time.sleep(2)
-picam2.capture_file("selfie2.jpg")
+    path_name = sys.argv[1]
+    path = os.path.dirname(path_name)
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    picam2 = Picamera2()
+    camera_config = picam2.create_preview_configuration()
+    picam2.configure(camera_config)
+    picam2.start_preview(Preview.QTGL)
+
+    picam2.start()
+    time.sleep(2)
+    picam2.capture_file(path_name)
