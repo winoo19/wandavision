@@ -10,13 +10,15 @@ if __name__ == "__main__":
 
     path_name = sys.argv[1]
     path = os.path.dirname(path_name)
-    if not os.path.exists(path):
+    if path and not os.path.exists(path):
         os.makedirs(path)
 
     picam2 = Picamera2()
-    camera_config = picam2.create_preview_configuration()
+    camera_config = picam2.create_preview_configuration(
+        main={"size": (640, 480), "format": "XRGB8888"}
+    )
     picam2.configure(camera_config)
-    picam2.start_preview(Preview.QTGL)
+    picam2.start_preview()
 
     picam2.start()
     time.sleep(2)

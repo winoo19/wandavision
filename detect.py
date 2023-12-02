@@ -1,5 +1,3 @@
-# Given a picture, detect the type of geometric figure, the color and the size of the figure
-
 import cv2
 import numpy as np
 import webcolors
