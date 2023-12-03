@@ -169,7 +169,8 @@ def enter_password(password: list, valid_figures: list):
         frame = cv2.cvtColor(im.copy(), cv2.COLOR_BGR2RGB)
         cv2.rectangle(frame, (0, 0), (640, 480), color, 10)
         cv2.imshow("preview", frame)
-        cv2.waitKey(1)
+        if cv2.waitKey(1) == ord("q"):
+            break
 
     picam2.stop()
     cv2.destroyAllWindows()
@@ -179,7 +180,7 @@ if __name__ == "__main__":
     valid_figures = [
         Figure("triangle", "red", (0, 0, 178), 3),
         Figure("triangle", "yellow", (0, 255, 255), 3),
-        Figure("quadrilateral", "green", (92, 130, 24), 4),
+        Figure("quadrilateral", "green", (92, 130, 24), 4, color_threshold=100),
         Figure("pentagon", "blue", (249, 54, 0), 5),
     ]
 
