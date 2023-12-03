@@ -43,31 +43,31 @@ class PatternInterpreter:
         self.picam2 = Picamera2()
         self.aruco_detector = self.get_aruco_detector()
 
-        self.n_lags = 10
+        self.n_lags = 15
 
         self.points = []
 
         self.patterns = {
             "circle": {
-                "points": np.load("patterns/circle0.npy"),
+                "points": np.load("trajectories/circle0.npy"),
                 "threshold": 0.45,
                 "message": "Hello!",
                 "sound": AudioSegment.from_wav("audio/dar_cera_pulir_cera.wav"),
             },
             "heart": {
-                "points": np.load("patterns/heart0.npy"),
+                "points": np.load("trajectories/heart0.npy"),
                 "threshold": 0.45,
                 "message": "I love you too!",
                 "sound": AudioSegment.from_wav("audio/iloveu2.wav"),
             },
             "infinity": {
-                "points": np.load("patterns/inf0.npy"),
+                "points": np.load("trajectories/inf0.npy"),
                 "threshold": 0.45,
                 "message": "Forever is a long time...",
                 "sound": AudioSegment.from_wav("audio/forever_long_time.wav"),
             },
             "thunder": {
-                "points": np.load("patterns/thunder0.npy"),
+                "points": np.load("trajectories/thunder0.npy"),
                 "threshold": 0.35,
                 "message": "I'm Thor! God of Thunder!",
                 "sound": AudioSegment.from_wav("audio/thor.wav"),
@@ -227,7 +227,9 @@ class PatternInterpreter:
                     pattern = self.match_pattern()
                     if pattern is not None:
                         sound = self.patterns[pattern]["sound"]
-                        threading.Thread(target=play, args=(sound,), daemon=True)
+                        threading.Thread(
+                            target=play, args=(sound,), daemon=True
+                        ).start()
                         print(self.patterns[pattern]["message"])
                     else:
                         print("I don't know what you mean!!!")
