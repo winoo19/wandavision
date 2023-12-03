@@ -4,15 +4,20 @@ import numpy as np
 
 
 class Figure:
-    def __init__(self, figure_type, color_name, color, n_vertices, color_threshold=50):
+    def __init__(self, figure_type, color_name, color, n_vertices, color_threshold=30):
         self.figure_type = figure_type
         self.color_name = color_name
-        self.color = np.array(color, dtype=np.uint8)
+        self.color = np.array(color)
         self.n_vertices = n_vertices
         self.color_threshold = color_threshold
 
     def __eq__(self, other):
-        return self.figure_type == other.figure_type and self.color == other.color
+        if other is None:
+            return False
+        return (
+            self.figure_type == other.figure_type
+            and self.color_name == other.color_name
+        )
 
     def __repr__(self):
         return f"Figure({self.figure_type}, {self.color_name}, {self.color}, {self.n_vertices})"
@@ -25,18 +30,28 @@ class Figure:
         Returns True if the image contains the figure
         """
 
-        # Convert to grayscale
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # Remove alpha channel
+        img_rgb = img[:, :, :3]
 
-        # Blur the image to reduce noise
-        blur = cv2.GaussianBlur(gray, (5, 5), 0)
+        # Blur without changing color
+        blur = cv2.GaussianBlur(img_rgb, (5, 5), 0)
 
-        # Threshold the image
-        _, thresh = cv2.threshold(blur, 95, 255, cv2.THRESH_BINARY_INV)
+        # Use mask with euclidean distance
+        mask = np.linalg.norm(blur - self.color, axis=-1) < self.color_threshold
+        thresh = np.zeros_like(mask, dtype=np.uint8)
+        thresh[mask] = 255
+
+        # Erode to remove noise
+        ks = 5
+        kernel = np.ones((ks, ks), np.uint8)
+        eroded = cv2.erode(thresh, kernel, iterations=1)
+
+        # Dilate to recover original size
+        dilated = cv2.dilate(eroded, kernel, iterations=1)
 
         # Find the contours
         contours, _ = cv2.findContours(
-            thresh.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
+            dilated.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
         )
 
         # Match with all contours
@@ -46,14 +61,7 @@ class Figure:
             )
 
             # Match figure type
-            if len(corners) != self.n_vertices:
-                continue
-
-            # Match color
-            center = np.mean(corners, axis=0).astype(np.int32)
-            color = img[center[0][1], center[0][0]]
-
-            if np.linalg.norm(color - self.color) < self.color_threshold:
+            if len(corners) == self.n_vertices:
                 return True
 
         return False
@@ -90,7 +98,7 @@ def get_picam2():
 
 
 def enter_password(password: list, valid_figures: list):
-    picam2 = get_picam2()
+    global picam2
     picam2.start()
 
     password_is_correct = None
@@ -108,21 +116,21 @@ def enter_password(password: list, valid_figures: list):
         # Capture image
         im = picam2.capture_array()
 
-        # Convert array to cv2 image without altering colors
-        temp = cv2.cvtColor(im.copy(), cv2.COLOR_BGR2RGB)
-        frame = cv2.cvtColor(temp, cv2.COLOR_RGB2BGR)
+        # Convert to RGB
+        frame = cv2.cvtColor(im.copy(), cv2.COLOR_BGR2RGB)
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
         # Detect figures
         figure_found = None
         for figure in valid_figures:
             if figure.detect(frame):
                 figure_found = figure
+                # print("Detected!", lagged_states)
                 break
 
-        if not figure_found:
-            lagged_states.append(figure_found)
-            if len(lagged_states) > n_lags:
-                lagged_states.pop(0)
+        lagged_states.append(figure_found)
+        if len(lagged_states) > n_lags:
+            lagged_states.pop(0)
 
         # Update state
         if len(lagged_states) == n_lags:
@@ -140,6 +148,8 @@ def enter_password(password: list, valid_figures: list):
             else:
                 print("Figure disappeared")
 
+        print("State:", state, "Prev:", prev_state)
+
         # Update previous state
         prev_state = state
 
@@ -154,7 +164,7 @@ def enter_password(password: list, valid_figures: list):
 
         # Plot sequence
         for i, figure in enumerate(sequence):
-            figure.plot_on_image(frame, (50 + 100 * i, 50), 30)
+            figure.plot_on_image(frame, (50 + 70 * i, 50), 30)
 
         cv2.imshow("preview", frame)
 
@@ -162,9 +172,10 @@ def enter_password(password: list, valid_figures: list):
             break
 
     # If password is correct, show camera with green border for 5 seconds
-    seconds = 5
+    seconds = 2
     color = (0, 255, 0) if password_is_correct else (0, 0, 255)
-    for _ in range(seconds * 30):
+    start_time = cv2.getTickCount()
+    while (cv2.getTickCount() - start_time) / cv2.getTickFrequency() < seconds:
         im = picam2.capture_array()
         frame = cv2.cvtColor(im.copy(), cv2.COLOR_BGR2RGB)
         cv2.rectangle(frame, (0, 0), (640, 480), color, 10)
@@ -175,12 +186,22 @@ def enter_password(password: list, valid_figures: list):
     picam2.stop()
     cv2.destroyAllWindows()
 
+    return password_is_correct
+
+
+def authenticate():
+    global password, valid_figures
+
+    while not enter_password(password, valid_figures):
+        print("Incorrect password. Try again.")
+
 
 if __name__ == "__main__":
+    picam2 = get_picam2()
     valid_figures = [
         Figure("triangle", "red", (0, 0, 178), 3),
         Figure("triangle", "yellow", (0, 255, 255), 3),
-        Figure("quadrilateral", "green", (92, 130, 24), 4, color_threshold=100),
+        Figure("quadrilateral", "green", (30, 125, 15), 4),
         Figure("pentagon", "blue", (249, 54, 0), 5),
     ]
 
@@ -189,5 +210,4 @@ if __name__ == "__main__":
         valid_figures[0],
         valid_figures[3],
     ]
-
-    enter_password(password, valid_figures)
+    authenticate()

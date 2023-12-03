@@ -45,9 +45,6 @@ class Figure:
         # Dilate to recover original size
         dilated = cv2.dilate(eroded, kernel, iterations=1)
 
-        # Show frame
-        cv2.imshow("dilated", dilated)
-
         # Find the contours
         contours, _ = cv2.findContours(
             dilated.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
@@ -61,10 +58,6 @@ class Figure:
 
             # Match figure type
             if len(corners) == self.n_vertices:
-                # Center of the figure
-                center = np.mean(corners, axis=0).astype(np.int32)
-                color = img[center[0][1], center[0][0]]
-                print(color)
                 return True
 
         return False
@@ -104,7 +97,7 @@ if __name__ == "__main__":
     # Create figures
     valid_figures = [
         Figure("triangle", "red", (0, 0, 178), 3),
-        Figure("triangle", "yellow", (0, 255, 255), 3),
+        Figure("triangle", "yellow", (0, 145, 200), 3),
         Figure("quadrilateral", "green", (30, 125, 15), 4),
         Figure("pentagon", "blue", (249, 54, 0), 5),
     ]
@@ -120,7 +113,7 @@ if __name__ == "__main__":
         center = (320, 240)
         # print(img[center[1], center[0]])
 
-        detected = valid_figures[2].detect(img)
+        detected = valid_figures[1].detect(img)
 
         if detected:
             cv2.rectangle(img, (0, 0), (640, 480), (0, 255, 0), 3)
