@@ -1,7 +1,10 @@
+import threading
 import cv2
 from picamera2 import Picamera2
 import numpy as np
 from curve_matching import frdist_invariant
+from pydub import AudioSegment
+from pydub.playback import play
 
 
 class PatternInterpreter:
@@ -49,21 +52,25 @@ class PatternInterpreter:
                 "points": np.load("patterns/circle0.npy"),
                 "threshold": 0.45,
                 "message": "Hello!",
+                "sound": AudioSegment.from_wav("audio/dar_cera_pulir_cera.wav"),
             },
             "heart": {
                 "points": np.load("patterns/heart0.npy"),
                 "threshold": 0.45,
                 "message": "I love you too!",
+                "sound": AudioSegment.from_wav("audio/iloveu2.wav"),
             },
             "infinity": {
                 "points": np.load("patterns/inf0.npy"),
                 "threshold": 0.45,
                 "message": "Forever is a long time...",
+                "sound": AudioSegment.from_wav("audio/forever_long_time.wav"),
             },
             "thunder": {
                 "points": np.load("patterns/thunder0.npy"),
                 "threshold": 0.35,
                 "message": "I'm Thor! God of Thunder!",
+                "sound": AudioSegment.from_wav("audio/thor.wav"),
             },
         }
 
@@ -189,7 +196,6 @@ class PatternInterpreter:
 
             # Convert array to cv2 image without altering colors
             frame = cv2.cvtColor(im.copy(), cv2.COLOR_BGR2RGB)
-            # frame = cv2.cvtColor(temp, cv2.COLOR_RGB2BGR)
 
             corners, ids, _ = self.aruco_detector.detectMarkers(frame)
             if ids is not None:
@@ -220,6 +226,8 @@ class PatternInterpreter:
                     # Match pattern
                     pattern = self.match_pattern()
                     if pattern is not None:
+                        sound = self.patterns[pattern]["sound"]
+                        threading.Thread(target=play, args=(sound,), daemon=True)
                         print(self.patterns[pattern]["message"])
                     else:
                         print("I don't know what you mean!!!")
