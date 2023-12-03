@@ -27,37 +27,6 @@ def take_chessboard_images(n_images):
     picam2.stop()
 
 
-def calibrate():
-    """
-    Calculates the camera matrix and distortion coefficients
-    """
-    # termination criteria
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-
-    # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,
-    # (9,10,0). Grid is 10x11
-    objp = np.zeros((10 * 11, 3), np.float32)
-    objp[:, :2] = np.mgrid[0:11, 0:10].T.reshape(-1, 2)
-
-    # Arrays to store object points and image points from all the images
-    objpoints, imgpoints, image_size = get_calibration_points(criteria, objp)
-
-    # Calibrate camera
-    ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(
-        objpoints, imgpoints, image_size, None, None
-    )
-
-    # Print the camera calibration parameters and the rmse
-    print("Camera matrix:")
-    print(mtx)
-    print("Distortion coefficients:")
-    print(dist)
-    print("RMSE:")
-    print(ret)
-    # Save the camera calibration parameters
-    np.savez("calibration.npz", mtx=mtx, dist=dist, rvecs=rvecs, tvecs=tvecs)
-
-
 def get_calibration_points(criteria, objp):
     """
     Get the calibration points from the images
@@ -99,6 +68,37 @@ def get_calibration_points(criteria, objp):
 
     cv2.destroyAllWindows()
     return objpoints, imgpoints, gray.shape[::-1]
+
+
+def calibrate():
+    """
+    Calculates the camera matrix and distortion coefficients
+    """
+    # termination criteria
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+
+    # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,
+    # (9,10,0). Grid is 10x11
+    objp = np.zeros((10 * 11, 3), np.float32)
+    objp[:, :2] = np.mgrid[0:11, 0:10].T.reshape(-1, 2)
+
+    # Arrays to store object points and image points from all the images
+    objpoints, imgpoints, image_size = get_calibration_points(criteria, objp)
+
+    # Calibrate camera
+    ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(
+        objpoints, imgpoints, image_size, None, None
+    )
+
+    # Print the camera calibration parameters and the rmse
+    print("Camera matrix:")
+    print(mtx)
+    print("Distortion coefficients:")
+    print(dist)
+    print("RMSE:")
+    print(ret)
+    # Save the camera calibration parameters
+    np.savez("calibration.npz", rmse=ret, mtx=mtx, dist=dist, rvecs=rvecs, tvecs=tvecs)
 
 
 if __name__ == "__main__":
