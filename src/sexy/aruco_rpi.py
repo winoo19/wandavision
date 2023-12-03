@@ -5,6 +5,37 @@ from curve_matching import frdist_invariant
 
 
 class PatternInterpreter:
+    """
+    Interprets patterns drawn by the user
+
+    Attributes
+    ----------
+    picam2 : Picamera2
+        The picamera2 object
+    aruco_detector : cv2.aruco.ArucoDetector
+        The aruco detector
+    n_lags : int
+        The number of lags to use for smoothing
+    points : list
+        The points of the current pattern
+    patterns : dict
+        The patterns database
+
+    Methods
+    -------
+    get_aruco_detector()
+        Constructs an aruco detector
+    get_picam2()
+        Constructs a picam2 object
+    add_point(point, threshold_min=5, threshold_max=70)
+        Adds a points to the curve if the last point is at least threshold
+        pixels away from the new point
+    match_pattern()
+        Matches the current pattern to the pattern database
+    chat(aruco_target_id=0)
+        Starts a conversation with the user
+    """
+
     def __init__(self):
         self.picam2 = Picamera2()
         self.aruco_detector = self.get_aruco_detector()
@@ -38,6 +69,13 @@ class PatternInterpreter:
 
     @staticmethod
     def get_aruco_detector():
+        """
+        Constructs an aruco detector
+
+        Returns
+        -------
+        cv2.aruco.ArucoDetector
+        """
         aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
         aruco_detector = cv2.aruco.ArucoDetector(
             aruco_dict, cv2.aruco.DetectorParameters()
@@ -46,6 +84,13 @@ class PatternInterpreter:
 
     @staticmethod
     def get_picam2():
+        """
+        Constructs a picam2 object
+
+        Returns
+        -------
+        Picamera2
+        """
         picam2 = Picamera2()
         config = picam2.create_preview_configuration(
             main={"size": (640, 480), "format": "XRGB8888"},
@@ -53,22 +98,42 @@ class PatternInterpreter:
         picam2.configure(config)
         return picam2
 
-    def add_point(self, point, threshold=5):
+    def add_point(self, point, threshold_min=5, threshold_max=70):
         """
         Adds a points to the curve if the last point is at least threshold
         pixels away from the new point
+
+        Parameters
+        ----------
+        point : np.array
+            The point to add
+        threshold_min : int
+            The minimum distance between the last point and the new point
+            for it to count as a distinct point
+        threshold_max : int
+            The maximum distance between the last point and the new point
+            for it not to count as an outlier
+
+        Returns
+        -------
+        None
         """
         if len(self.points) == 0:
             self.points.append(point)
             return
 
         last_point = self.points[-1]
-        if np.linalg.norm(point - last_point) > threshold:
+        if threshold_max > np.linalg.norm(point - last_point) > threshold_min:
             self.points.append(point)
 
     def match_pattern(self):
         """
         Matches the current pattern to the pattern database
+
+        Returns
+        -------
+        str
+            The name of the closest pattern
         """
         # Normalize points and invert y axis
         pattern = np.array(self.points)
@@ -99,7 +164,19 @@ class PatternInterpreter:
             else None
         )
 
-    def conversate(self, aruco_target_id: int = 0):
+    def chat(self, aruco_target_id: int = 0):
+        """
+        Starts a conversation with the user
+
+        Parameters
+        ----------
+        aruco_target_id : int
+            The id of the aruco marker to track
+
+        Returns
+        -------
+        None
+        """
         cv2.startWindowThread()
         self.picam2.start()
 
@@ -168,4 +245,4 @@ class PatternInterpreter:
 
 if __name__ == "__main__":
     pattern_interpreter = PatternInterpreter()
-    pattern_interpreter.conversate(aruco_target_id=0)
+    pattern_interpreter.chat(aruco_target_id=0)
