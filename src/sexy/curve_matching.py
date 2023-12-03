@@ -4,11 +4,26 @@ import scipy.optimize
 import matplotlib.pyplot as plt
 
 
-def get_start_index(points1, points2, n_start_points: int = 5):
+def get_start_index(points1: np.ndarray, points2: np.ndarray, n_start_points: int = 5):
     """
     Find the closest points in points2 to the first point in points1
+
+    Parameters
+    ----------
+    points1 : np.ndarray
+        numpy array of shape (n_points, 2) containing the coordinates of the points
+    points2 : np.ndarray
+        numpy array of shape (n_points, 2) containing the coordinates of the points
+    n_start_points : int
+        Number of points to be used to find the closest points
+
+    Returns
+    -------
+    int
+        The index of the closest point in points2 to the first point in points1
     """
 
+    # Make sure n_start_points is not larger than the number of points
     if n_start_points > points1.shape[0] or n_start_points > points2.shape[0]:
         n_start_points = min(points1.shape[0], points2.shape[0])
 
@@ -19,6 +34,7 @@ def get_start_index(points1, points2, n_start_points: int = 5):
     n_points2 = n_points2 - n_points2 % n_start_points
     points2_reshaped = points2[:n_points2].reshape(-1, n_start_points, 2)
 
+    # Find the closest points
     min_mean_dist = np.inf
     min_index = 0
     for i in range(points2_reshaped.shape[0]):
@@ -33,6 +49,18 @@ def get_start_index(points1, points2, n_start_points: int = 5):
 def frdist_invariant(points1: np.ndarray, points2: np.ndarray):
     """
     Invariant to direction of points
+
+    Parameters
+    ----------
+    points1 : np.ndarray
+        numpy array of shape (n_points, 2) containing the coordinates of the points
+    points2 : np.ndarray
+        numpy array of shape (n_points, 2) containing the coordinates of the points
+
+    Returns
+    -------
+    float
+        The Fréchet distance between the two curves
     """
     # get closest points
     start_index = get_start_index(points1, points2)
@@ -50,8 +78,18 @@ def frdist_invariant(points1: np.ndarray, points2: np.ndarray):
 def frdist(points1: np.ndarray, points2: np.ndarray):
     """
     The Fréchet distance is the smallest of the maximum pairwise distances.
-    :param points1: numpy array of shape (n_points, 2) containing the coordinates of the points
-    :param points2: numpy array of shape (n_points, 2) containing the coordinates of the points
+
+    Parameters
+    ----------
+    points1 : np.ndarray
+        numpy array of shape (n_points, 2) containing the coordinates of the points
+    points2 : np.ndarray
+        numpy array of shape (n_points, 2) containing the coordinates of the points
+
+    Returns
+    -------
+    float
+        The Fréchet distance between the two curves
     """
 
     # Calculate the distance matrix
@@ -80,16 +118,20 @@ def frdist(points1: np.ndarray, points2: np.ndarray):
 def normalize_points(points):
     """
     Normalizes a set of points
-    :param points: numpy array of shape (n_points, 2) containing the coordinates of the points
-    :return: numpy array of shape (n_points, 2) containing the normalized coordinates of the points
+
+    Parameters
+    ----------
+    points : np.ndarray
+        numpy array of shape (n_points, 2) containing the coordinates of the points
+
+    Returns
+    -------
+    np.ndarray
+        The normalized points
     """
     points = points - np.mean(points, axis=0)
     points = points / np.max(np.abs(points), axis=0)
-    xmin = np.min(points[:, 0])
-    xmax = np.max(points[:, 0])
-    ymin = np.min(points[:, 1])
-    ymax = np.max(points[:, 1])
-    print(xmin, xmax, ymin, ymax)
+
     return points
 
 
@@ -97,8 +139,16 @@ def create_curve(threshold=5.0):
     """
     Opens a pygame window and waits for the user to draw a curve with the mouse.
     Only add point if distance between last point and current point is larger than threshold.
-    :param n_points: number of points to be drawn
-    :return: numpy array of shape (n_points, 2) containing the coordinates of the points
+
+    Parameters
+    ----------
+    threshold : float
+        The minimum distance between the last point and the new point for it to count as a distinct point
+
+    Returns
+    -------
+    np.ndarray
+        The normalized points
     """
 
     # Initialize pygame
@@ -165,6 +215,22 @@ def create_curve(threshold=5.0):
 
 
 class GenericCurve:
+    """
+    Class for storing a curve pattern
+
+    Attributes
+    ----------
+    points : np.ndarray
+        numpy array of shape (n_points, 2) containing the coordinates of the points
+
+    Methods
+    -------
+    save_pattern(filename)
+        Saves the pattern to a file
+    load_pattern(filename)
+        Loads the pattern from a file
+    """
+
     def __init__(self, filename=None):
         self.points = None
 
