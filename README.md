@@ -16,9 +16,13 @@ To calibrate the camera, we use a chessboard. We take multiple pictures of the c
 
 ### Pattern detection
 
+We are able to detect any n-sided polygon of any color. First, we check what color the polygon appears to be in the camera in the file `src/detect_patterns/detect`. Then, to detect it, we first blur the image using gaussian blur to decrease noise. Then, we filter the image by that color (using euclidean distance to the color and setting a threshold), and we binarize by that filter. Next, we want to get rid of any small blobs of the color, so we use erosion for that.
+
+Now that we have a binarized image with hopefully just the shape we want to detect, the next step is to find how many sides it has. We do that by getting the contours of the shape by using `cv2.findContours()`. Then, we approximate the contours using `cv2.approxPolyDP()`, and that returns the number of sides of the shape. If we have done everything correctly, we now know how many sides the polygon of a certain color has, so it is detected.
+
 ### Sequence decoder
 
-### Gestures chat (optional)
+### Gestures chat (free part of the project)
 
 In order to do curve matching, we have to do several steps. The first thing is to detect aruco codes in the video, which we do using the `cv2.aruco.ArucoDetector` class.
 
