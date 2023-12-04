@@ -2,7 +2,8 @@ import time
 import numpy as np
 import cv2
 import glob
-from picamera2 import Picamera2, Preview
+
+# from picamera2 import Picamera2, Preview
 
 
 CHESSBOARD_PATH = "images/chessboard/"

@@ -1,6 +1,5 @@
 import numpy as np
 import pygame
-import scipy.optimize
 import matplotlib.pyplot as plt
 
 
@@ -255,7 +254,7 @@ if __name__ == "__main__":
 
     ##############################
     ###     TEST PATTERN      ####
-    pattern = GenericCurve("patterns/circle0.npy")
+    pattern = GenericCurve("trajectories/heart0.npy")
     points = create_curve()
 
     similarity = frdist_invariant(pattern.points, points)
@@ -267,8 +266,8 @@ if __name__ == "__main__":
     plt.scatter(
         points[:, 0],
         points[:, 1],
-        label="curve",
-        c="g" if similarity < 0.7 else "r",
+        label=f"curve: Fréchet distance = {similarity}",
+        c="g" if similarity < 0.5 else "r",
     )
     plt.gca().set_aspect("equal", adjustable="box")
 
