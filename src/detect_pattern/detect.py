@@ -4,7 +4,7 @@ import numpy as np
 
 
 class Figure:
-    def __init__(self, figure_type, color_name, color, n_vertices, color_threshold=50):
+    def __init__(self, figure_type, color_name, color, n_vertices, color_threshold=40):
         self.figure_type = figure_type
         self.color_name = color_name
         self.color = np.array(color)
@@ -12,7 +12,11 @@ class Figure:
         self.color_threshold = color_threshold
 
     def __eq__(self, other):
-        return self.figure_type == other.figure_type and self.color == other.color
+        if not isinstance(other, Figure):
+            return False
+        return (
+            self.figure_type == other.figure_type and self.color_name == other.color_name
+        )
 
     def __repr__(self):
         return f"Figure({self.figure_type}, {self.color_name}, {self.color}, {self.n_vertices})"
@@ -29,26 +33,31 @@ class Figure:
         img_rgb = img[:, :, :3]
 
         # Blur without changing color
-        blur = cv2.GaussianBlur(img_rgb, (5, 5), 0)
+        ks = 5
+        blur = cv2.GaussianBlur(img_rgb, (ks, ks), 0)
 
         # Use mask with euclidean distance
-        max_distance = 30
-        mask = np.linalg.norm(blur - self.color, axis=-1) < max_distance
+        mask = np.linalg.norm(blur - self.color, axis=-1) < self.color_threshold
         thresh = np.zeros_like(mask, dtype=np.uint8)
         thresh[mask] = 255
 
+        cv2.imshow("thresh", thresh)
+
         # Erode to remove noise
-        ks = 5
+        ks = 9
+        iters = 6
         kernel = np.ones((ks, ks), np.uint8)
-        eroded = cv2.erode(thresh, kernel, iterations=1)
+        eroded = cv2.erode(thresh, kernel, iterations=iters)
 
         # Dilate to recover original size
-        dilated = cv2.dilate(eroded, kernel, iterations=1)
+        # dilated = cv2.dilate(eroded, kernel, iterations=iters)
 
         # Find the contours
         contours, _ = cv2.findContours(
-            dilated.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
+            eroded.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
         )
+
+        cv2.imshow("dilated", eroded)
 
         # Match with all contours
         for contour in contours:
@@ -96,10 +105,14 @@ def get_picam2():
 if __name__ == "__main__":
     # Create figures
     valid_figures = [
-        Figure("triangle", "red", (0, 0, 178), 3),
-        Figure("triangle", "yellow", (0, 145, 200), 3),
-        Figure("quadrilateral", "green", (30, 125, 15), 4),
-        Figure("pentagon", "blue", (249, 54, 0), 5),
+        Figure("quadrilateral", "red", (50, 40, 140), 4),
+        Figure("quadrilateral", "yellow", (35, 155, 172), 4),
+        Figure("triangle", "blue", (140, 85, 45), 3),
+        Figure("pentagon", "green", (50, 85, 55), 5),
+        # Figure("triangle", "red", (0, 0, 178), 3),
+        # Figure("triangle", "yellow", (0, 145, 200), 3),
+        # Figure("quadrilateral", "green", (30, 125, 15), 4),
+        # Figure("pentagon", "blue", (249, 54, 0), 5),
     ]
 
     # Try to detect a quadrilateral
@@ -111,9 +124,9 @@ if __name__ == "__main__":
 
         # Print colo in the center
         center = (320, 240)
-        # print(img[center[1], center[0]])
+        print(img[center[1], center[0]])
 
-        detected = valid_figures[1].detect(img)
+        detected = valid_figures[3].detect(img)
 
         if detected:
             cv2.rectangle(img, (0, 0), (640, 480), (0, 255, 0), 3)
