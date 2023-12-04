@@ -228,8 +228,21 @@ class PatternInterpreter:
             previous_state = state
 
             # Plot points
-            for point in self.points:
-                cv2.circle(frame, tuple(point.astype(int)), 5, (0, 0, 255), -1)
+            # for point in self.points:
+            #     cv2.circle(frame, tuple(point.astype(int)), 5, (0, 0, 255), -1)
+
+            # Plot smooth lne of points
+            if len(self.points) > 1:
+                # Linear fade out of size. Thicker the newer the point.
+                for i in range(len(self.points) - 1):
+                    size = 4 * (i / len(self.points))
+                    cv2.line(
+                        frame,
+                        tuple(self.points[i].astype(int)),
+                        tuple(self.points[i + 1].astype(int)),
+                        (0, 0, 255),
+                        int(size) + 2,
+                    )
 
             # mirror
             cv2.imshow("frame", cv2.flip(frame, 1))
