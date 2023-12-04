@@ -1,8 +1,8 @@
 import threading
 import cv2
-from picamera2 import Picamera2
+from detect_pattern.detect import get_picam2
 import numpy as np
-from curve_matching import frdist_invariant
+from gestures_chat.curve_matching import frdist_invariant
 from pydub import AudioSegment
 from pydub.playback import play
 
@@ -39,8 +39,11 @@ class PatternInterpreter:
         Starts a conversation with the user
     """
 
-    def __init__(self):
-        self.picam2 = Picamera2()
+    def __init__(self, picam=None):
+        if picam is None:
+            self.picam2 = get_picam2()
+        else:
+            self.picam2 = picam
         self.aruco_detector = self.get_aruco_detector()
 
         self.n_lags = 15
@@ -88,22 +91,6 @@ class PatternInterpreter:
             aruco_dict, cv2.aruco.DetectorParameters()
         )
         return aruco_detector
-
-    @staticmethod
-    def get_picam2():
-        """
-        Constructs a picam2 object
-
-        Returns
-        -------
-        Picamera2
-        """
-        picam2 = Picamera2()
-        config = picam2.create_preview_configuration(
-            main={"size": (640, 480), "format": "XRGB8888"},
-        )
-        picam2.configure(config)
-        return picam2
 
     def add_point(self, point, threshold_min=5, threshold_max=70):
         """
@@ -196,6 +183,7 @@ class PatternInterpreter:
 
             # Convert array to cv2 image without altering colors
             frame = cv2.cvtColor(im.copy(), cv2.COLOR_BGR2RGB)
+            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
             corners, ids, _ = self.aruco_detector.detectMarkers(frame)
             if ids is not None:

@@ -1,6 +1,6 @@
 import cv2
 from picamera2 import Picamera2
-from detect import Figure
+from detect_pattern.detect import Figure
 
 
 def get_picam2():
@@ -12,8 +12,7 @@ def get_picam2():
     return picam2
 
 
-def enter_password(password: list, valid_figures: list):
-    global picam2
+def enter_password(picam2, password: list, valid_figures: list):
     picam2.start()
 
     password_is_correct = None
@@ -68,8 +67,6 @@ def enter_password(password: list, valid_figures: list):
 
         # Check password
         if len(sequence) == len(password):
-            print("SEQ:", sequence)
-            print("PAS:", password)
             if sequence == password:
                 print("Correct password")
                 password_is_correct = True
@@ -106,10 +103,8 @@ def enter_password(password: list, valid_figures: list):
     return password_is_correct
 
 
-def authenticate():
-    global password, valid_figures
-
-    while not enter_password(password, valid_figures):
+def authenticate(picam, password, valid_figures):
+    while not enter_password(picam, password, valid_figures):
         print("Incorrect password. Try again.")
 
 
@@ -132,4 +127,4 @@ if __name__ == "__main__":
         valid_figures[2],
         valid_figures[3],
     ]
-    authenticate()
+    authenticate(picam2, password, valid_figures)
