@@ -16,11 +16,17 @@ To calibrate the camera, we use a chessboard. We take multiple pictures of the c
 
 ### Pattern detection
 
-We are able to detect any n-sided polygon of any color. First, we check what color the polygon appears to be in the camera in the file `src/detect_patterns/detect`. Then, to detect it, we first blur the image using gaussian blur to decrease noise. Then, we filter the image by that color (using euclidean distance to the color and setting a threshold), and we binarize by that filter. Next, we want to get rid of any small blobs of the color, so we use erosion for that.
+We are able to detect any n-sided polygon of any color. For that we only need to precompute the exact rgb color of the polygon in the camera. We do that using the file `src/detect_patterns/detect`.   
 
-Now that we have a binarized image with hopefully just the shape we want to detect, the next step is to find how many sides it has. We do that by getting the contours of the shape by using `cv2.findContours()`. Then, we approximate the contours using `cv2.approxPolyDP()`, and that returns the number of sides of the shape. If we have done everything correctly, we now know how many sides the polygon of a certain color has, so it is detected.
+Then, to detect the figure, we first blur the image using gaussian blur to decrease noise. Then, we segment the image by the color of the polygon (using euclidean distance to the color and setting a threshold), and we binarize by that filter. Next, we want to get rid of any small blobs of the color, so we erode the image.
+
+Now that we have a binarized image with just the shape we want to detect, the next step is to find how many sides it has. We do that by getting the contours of the shape by using `cv2.findContours()`. Then, we approximate the contours using `cv2.approxPolyDP()`, which returns the number of sides of the shape. If we have done everything correctly, we now know how many sides the polygon of a certain color has, so it is detected.
 
 ### Sequence decoder
+
+We create a loop that, using the pattern detection algorithm defined before, lets you define a password and keeps asking you to enter it until you do so correctly. 
+
+In order to detect more confidently when a figure enters or disappears, we add the detected figures to a queue for a defined number of frames. We only detect a positive edge when the figure is filling the whole queue, and a negative edge when only Nones are filling it after a figure has been detected
 
 ### Gestures chat (free part of the project)
 
