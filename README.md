@@ -16,23 +16,37 @@ To calibrate the camera, we use a chessboard. We take multiple pictures of the c
 
 ### Pattern detection
 
-We are able to detect any n-sided polygon of any color. For that we only need to precompute the exact rgb color of the polygon in the camera. We do that using the file `src/detect_patterns/detect`.   
+We are able to detect any n-sided polygon of any color. For that we only need to precompute the exact rgb color of the polygon in the camera. We do that using the file `src/detect_patterns/detect`.
 
 Then, to detect the figure, we first blur the image using gaussian blur to decrease noise. Then, we segment the image by the color of the polygon (using euclidean distance to the color and setting a threshold), and we binarize by that filter. Next, we want to get rid of any small blobs of the color, so we erode the image.
 
 Now that we have a binarized image with just the shape we want to detect, the next step is to find how many sides it has. We do that by getting the contours of the shape by using `cv2.findContours()`. Then, we approximate the contours using `cv2.approxPolyDP()`, which returns the number of sides of the shape. If we have done everything correctly, we now know how many sides the polygon of a certain color has, so it is detected.
 
+<div align="center">
+    <img src="/images/report/pentagon.png" alt="WandaVision" width="80%" height="80%">
+</div>
+
 ### Sequence decoder
 
-We create a loop that, using the pattern detection algorithm defined before, lets you define a password and keeps asking you to enter it until you do so correctly. 
+We create a loop which, using the pattern detection algorithm defined before, lets you define a password and keeps asking you to enter it until you do so correctly.
 
-In order to detect more confidently when a figure enters or disappears, we add the detected figures to a queue for a defined number of frames. We only detect a positive edge when the figure is filling the whole queue, and a negative edge when only Nones are filling it after a figure has been detected
+In order to detect more confidently when a figure enters or disappears, we add the detected figures to a queue for a defined number of frames. We only detect a positive edge when the figure is filling the whole queue, and a negative edge when only Nones are filling it after a figure has been detected.
 
-### Gestures chat (free part of the project)
+For a correct password to be entered, the sequence has to be perfect. First the first figure has to be detected, then the second, etc. It only does the check when the whole sequence has been entered. If it is correct, the image frame will be displayed in green, and if it is not, it will be displayed in red.
+
+<div align="center">
+    <img src="/images/report/password.png" alt="WandaVision" width="80%" height="80%">
+</div>
+
+### Gestures chat (additional)
 
 In order to do curve matching, we have to do several steps. The first thing is to detect aruco codes in the video, which we do using the `cv2.aruco.ArucoDetector` class.
 
 After detecting the codes, we have to get the points in the video that define the curve made by the movement of the code. We cannot simply get the center of the aruco code for every frame of the video, as this would generate too many points, so we define a minimum distance with the previous point for it to count as a distinct point. We also define a maximum distance to take care of outliers. Finally, we detect the start and the end of the sequence by detecting the first sequence of frames when the code is detected and the first sequence of frames when the code is not detected, so that if a person puts the code in their hand, they can start with the hand closed, begin the sequence by opening their hand, and end the sequence by closing the hand again.
+
+<div align="center">
+    <img src="/images/report/infinity.png" alt="WandaVision" width="80%" height="80%">
+</div>
 
 Next, we have to detect which figure is being drawn. This was very tricky. At first, we decided to define each figure as a mathematical function (given by its parametrical representation; for example, a circle would be x^2 + y^2 - r^2) with parameters (so it could be fitted to the points), and using scipy we found which parameters better suited the points. That means, which parameters gave a lower MSE for the points in that function. However, it wasn't easy to find a good parametrization for every figure. Also, the biggest problem is that it was very common for it to find a local minimum (as the function for more complex shapes, such as the heart or the infinity, had a very high degree and plenty of inflexion points. Also, the global minimum could even not be the best real fit, as the function could have a very low point, close to 0 in the z axis, but far from a good fit, and the "good" fit could have a higher MSE).
 
@@ -44,7 +58,7 @@ Finally, we optimized that method by using Fréchet distance, which is a method 
 
 Once we have the figure it represents, we play an audio linked with that figure that we have defined (for example, for the heart, it plays the sentence "I love you too"). We had to make threads for the audio player so that it runs in the background and the whole runtime isn't stopped when the audio is playing.
 
-In the file `src/gestures_chat/pattern_creator.py` we create the model patterns and we adjust the threshold for each one, and in the file `src/gestures_chat/curve_matching.py` we run the described program in the Raspberri Pi.
+In the file `src/gestures_chat/curve_matching.py` we create the model patterns and we adjust the threshold for each one, and in the file `src/gestures_chat/aruco_rpi.py` we run the described program in the Raspberri Pi.
 
 ## Results
 
