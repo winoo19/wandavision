@@ -54,7 +54,7 @@ To avoid this we decided against using mathematical functions all together. Our 
 
 Finally, we optimized that method by using Fréchet distance, which is a method to give a distance between two trajectories, i.e. it finds the distance between two ordered set of points. We still draw a base model for each figure, and then we use Fréchet distance to compare the model with the sequence of points. If the "distance" between them is lower than a certain threshold that we define, we consider the sequence of points to represent that figure. We also make it invariant to the starting point, the location of the points, and the scale.
 
-![WandaVision](/images/report/heart_similar.png){:height="50%" width="50%"}![WandaVision](/images/report/heart_!similar.png){:height="50%" width="50%"}
+![WandaVision](/images/report/heart_similar.png)![WandaVision](/images/report/heart_!similar.png)
 
 Once we have the figure it represents, we play an audio linked with that figure that we have defined (for example, for the heart, it plays the sentence "I love you too"). We had to make threads for the audio player so that it runs in the background and the whole runtime isn't stopped when the audio is playing.
 
@@ -67,3 +67,15 @@ The camera calibration works well. It detects all of the corners in the differen
 ## Next steps
 
 To add to the project, more figures could be added (with their respective audio files) so there are more than 4 and the chat is a bit more interactive. Some other ways to add to the project could be to add effects to the camera display when a pattern is detected (like some lightning bolts for the lightning).
+
+## Video Demo
+
+<!-- Centered video: video-demo.mp4 -->
+<div align="center">
+    <video src="./video-demo.mp4" width="80%" controls>
+</div>
+
+## Authors
+
+- [Sergio Herreros Pérez](https://github.com/goomii17)
+- [Daniel Sánchez Sánchez](https://github.com/winoo19)
