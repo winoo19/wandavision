@@ -4,11 +4,7 @@
 
 In this project, we use the picamera module and a Raspberri Pi to do multiple things. First, we calibrate said camera using a chessboard. Then, we use the camera to detect figures, like polygons, circles, and lines (with their color too). We also implement a password system that uses the camera to detect a certain pattern of figures. Lastly, we use the camera to detect an aruco code (that a person can put in their hand) and follow it, to identify patterns (specifically a circle, a heart, an infinity symbol, and a lightning).
 
-
-
-https://github.com/winoo19/wandavision/assets/94676306/dca568f4-6033-4a05-9436-3921d96d06a5
-
-
+https://github.com/winoo19/wandavision/assets/94676306/bd30746c-126b-47fe-8a40-32880edccb1e
 
 ## Methodology
 
